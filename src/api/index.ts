@@ -1,0 +1,38 @@
+import { Env } from '../shared/types';
+import { getThemes, getUrgentItems, searchFeedback, getStats } from './dashboard-api';
+
+export async function handleAPI(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  };
+  
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+  
+  let response: Response;
+  
+  if (url.pathname === '/api/themes') {
+    response = await getThemes(request, env);
+  } else if (url.pathname === '/api/urgent') {
+    response = await getUrgentItems(request, env);
+  } else if (url.pathname === '/api/search') {
+    response = await searchFeedback(request, env);
+  } else if (url.pathname === '/api/stats') {
+    response = await getStats(request, env);
+  } else {
+    response = new Response('Not Found', { status: 404 });
+  }
+  
+  // Add CORS headers
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  
+  return response;
+}
