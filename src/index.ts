@@ -34,7 +34,7 @@ export default {
     }
     
     // Root endpoint
-    return new Response('FeedbackIQ API - Running', { 
+    return new Response('FAIE API - Running', { 
       status: 200,
       headers: { 'Content-Type': 'text/plain' }
     });
