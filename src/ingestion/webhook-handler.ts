@@ -1,5 +1,5 @@
 import { FeedbackItem, Env } from '../shared/types';
-import { verifyGitHubSignature, verifySlackSignature, generateContentHash } from '../shared/utils';
+import { generateContentHash } from '../shared/utils';
 import { processInBackground } from '../processing/ai-processor';
 
 
@@ -11,33 +11,51 @@ export async function handleSupportWebhook(
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
+  console.log('1. Support webhook received');
+  
   const apiKey = request.headers.get('x-api-key');
+  console.log('2. API key checked:', apiKey ? 'present' : 'missing');
   
   if (apiKey !== env.SUPPORT_API_KEY) {
+    console.log('3. Auth failed');
     return new Response('Unauthorized', { status: 401 });
   }
   
-  const payload = await request.json() as any;
+  console.log('3. Auth passed');
   
-  if (!payload.ticket_id || !payload.description) {
-    return new Response('Missing required fields', { status: 400 });
-  }
-  
-  const feedback: FeedbackItem = {
-    source: 'support',
-    external_id: `ticket-${payload.ticket_id}`,
-    title: payload.subject,
-    content: payload.description,
-    author: payload.customer_email,
-    timestamp: payload.created_at ? new Date(payload.created_at).getTime() : Date.now(),
-    metadata: {
-      priority: payload.priority,
-      customer_tier: payload.customer_tier,
-      tags: payload.tags
+  try {
+    const payload = await request.json() as any;
+    console.log('4. Payload parsed:', payload);
+    
+    if (!payload.ticket_id || !payload.description) {
+      console.log('5. Validation failed');
+      return new Response('Missing required fields', { status: 400 });
     }
-  };
-  
-  return await storeFeedbackAndProcess(feedback, JSON.stringify(payload), env, ctx);
+    
+    console.log('5. Validation passed');
+    
+    const feedback: FeedbackItem = {
+      source: 'support',
+      external_id: `ticket-${payload.ticket_id}`,
+      title: payload.subject,
+      content: payload.description,
+      author: payload.customer_email,
+      timestamp: payload.created_at ? new Date(payload.created_at).getTime() : Date.now(),
+      metadata: {
+        priority: payload.priority,
+        customer_tier: payload.customer_tier,
+        tags: payload.tags
+      }
+    };
+    
+    console.log('6. Feedback object created');
+    
+    return await storeFeedbackAndProcess(feedback, JSON.stringify(payload), env, ctx);
+    
+  } catch (error) {
+    console.error('❌ Error in handleSupportWebhook:', error);
+    return new Response('Internal Server Error', { status: 500 });
+  }
 }
 
 /**

@@ -165,12 +165,12 @@ export async function getStats(
     async () => {
       const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
       
-      // Total count
+      // Total count (last 7 days)
       const total = await env.DB.prepare(
         'SELECT COUNT(*) as count FROM feedback WHERE timestamp > ?'
       ).bind(weekAgo).first();
       
-      // By source
+      // By source (last 7 days)
       const bySource = await env.DB.prepare(`
         SELECT source, COUNT(*) as count 
         FROM feedback 
@@ -178,15 +178,16 @@ export async function getStats(
         GROUP BY source
       `).bind(weekAgo).all();
       
-      // Sentiment distribution
+      // Sentiment distribution (only processed items, last 7 days)
       const sentimentDist = await env.DB.prepare(`
         SELECT sentiment, COUNT(*) as count
         FROM feedback
-        WHERE processed_at > ?
+        WHERE processed_at IS NOT NULL
+        AND timestamp > ?
         GROUP BY sentiment
       `).bind(weekAgo).all();
       
-      // Urgency distribution
+      // Urgency distribution (only processed items, last 7 days)
       const urgencyDist = await env.DB.prepare(`
         SELECT 
           CASE 
@@ -197,7 +198,8 @@ export async function getStats(
           END as level,
           COUNT(*) as count
         FROM feedback
-        WHERE processed_at > ?
+        WHERE processed_at IS NOT NULL
+        AND timestamp > ?
         GROUP BY level
       `).bind(weekAgo).all();
       
@@ -209,15 +211,14 @@ export async function getStats(
         LIMIT 5
       `).all();
       
-      // Processing health
+      // ✅ Processing health - ALL feedback items (not just last week)
       const processingHealth = await env.DB.prepare(`
         SELECT 
           COUNT(*) as total,
           SUM(CASE WHEN processed_at IS NOT NULL THEN 1 ELSE 0 END) as processed,
           SUM(CASE WHEN processing_error IS NOT NULL THEN 1 ELSE 0 END) as failed
         FROM feedback
-        WHERE timestamp > ?
-      `).bind(weekAgo).first();
+      `).first();
       
       return {
         total: total?.count || 0,
@@ -225,7 +226,11 @@ export async function getStats(
         sentiment: sentimentDist.results,
         urgency: urgencyDist.results,
         top_themes: topThemes.results,
-        processing_health: processingHealth
+        processing_health: {
+          total: processingHealth?.total || 0,
+          processed: processingHealth?.processed || 0,
+          failed: processingHealth?.failed || 0
+        }
       };
     },
     request

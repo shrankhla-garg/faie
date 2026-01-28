@@ -45,25 +45,28 @@ export async function processInBackground(
     feedbackId
   ).run();
   
-  // Store embedding in Vectorize
-  if (embedding) {
-    try {
-      await env.VECTORIZE.upsert([
-        {
-          id: feedbackId.toString(),
-          values: embedding,
-          metadata: {
-            urgency,
-            sentiment: sentimentResult.sentiment,
-            tags: tags.join(',')
-          }
+// Store embedding in Vectorize
+if (embedding) {
+  try {
+    await env.VECTORIZE.upsert([
+      {
+        id: feedbackId.toString(),
+        values: embedding,
+        metadata: {
+          urgency,
+          sentiment: sentimentResult.sentiment,
+          tags: tags.join(',')
         }
-      ]);
-      console.log(`Embedding stored for ${feedbackId}`);
-    } catch (error) {
-      console.error(`Vectorize upsert failed for ${feedbackId}:`, error);
-    }
+      }
+    ]);
+    console.log(`Embedding stored for ${feedbackId}`);
+  } catch (error) {
+    console.error(`Vectorize upsert failed for ${feedbackId}:`, error);
+    // Don't fail entire processing if just Vectorize fails
   }
+} else {
+  console.log(`No embedding for ${feedbackId} (expected in local dev)`);
+}
   
   // Update theme aggregates
   await updateThemeAggregates(tags, sentimentResult.score, urgency, env.DB);

@@ -29,10 +29,15 @@ export async function handleAPI(request: Request, env: Env): Promise<Response> {
     response = new Response('Not Found', { status: 404 });
   }
   
-  // Add CORS headers
-  Object.entries(corsHeaders).forEach(([key, value]) => {
-    response.headers.set(key, value);
+  // ✅ Create NEW response with CORS headers
+  const newResponse = new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: {
+      ...Object.fromEntries(response.headers),
+      ...corsHeaders
+    }
   });
   
-  return response;
+  return newResponse;
 }
