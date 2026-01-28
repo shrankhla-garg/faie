@@ -1,5 +1,5 @@
 import { Env } from '../shared/types';
-import { handleGitHubWebhook, handleSlackWebhook, handleSupportWebhook } from './webhook-handler';
+import { handleSupportWebhook } from './webhook-handler';
 
 export async function handleIngestion(
   request: Request,
@@ -8,11 +8,8 @@ export async function handleIngestion(
 ): Promise<Response> {
   const url = new URL(request.url);
   
-  if (url.pathname === '/webhook/github') {
-    return handleGitHubWebhook(request, env, ctx);
-  } else if (url.pathname === '/webhook/slack') {
-    return handleSlackWebhook(request, env, ctx);
-  } else if (url.pathname === '/webhook/support') {
+  // Only support webhook for demo
+  if (url.pathname === '/webhook/support') {
     return handleSupportWebhook(request, env, ctx);
   }
   

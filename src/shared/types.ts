@@ -37,8 +37,6 @@ export interface Env {
   DB: D1Database;
   AI: any;
   VECTORIZE: VectorizeIndex;
-  GITHUB_SECRET: string;
-  SLACK_SIGNING_SECRET: string;
   SLACK_WEBHOOK_URL: string;
   SUPPORT_API_KEY: string;
   DASHBOARD_URL: string;
