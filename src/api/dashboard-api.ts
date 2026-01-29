@@ -87,68 +87,42 @@ export async function searchFeedback(
   const query = url.searchParams.get('q');
   
   if (!query) {
-    return new Response('Missing query parameter', { status: 400 });
+    return Response.json({ error: 'Missing query parameter' }, { status: 400 });
   }
   
   try {
-    // Generate embedding for search query
     const embeddingResult = await env.AI.run(
       '@cf/baai/bge-base-en-v1.5',
       { text: query }
     );
     
-    // Check if embedding was generated successfully
-    if (!embeddingResult || !embeddingResult.data || !embeddingResult.data[0]) {
-      console.error('Failed to generate embedding for query:', query);
-      return Response.json({ error: 'Failed to generate search embedding' }, { status: 500 });
-    }
+    const results = await env.VECTORIZE.query(embeddingResult.data[0], { topK: 20 });
     
-    // Search Vectorize
-    const results = await env.VECTORIZE.query(embeddingResult.data[0], {
-      topK: 20
-    });
-    
-    if (!results.matches || results.matches.length === 0) {
+    if (!results?.matches || results.matches.length === 0) {
       return Response.json([]);
     }
     
-    // Fetch full feedback from D1
     const feedbackIds = results.matches.map(m => parseInt(m.id));
     const placeholders = feedbackIds.map(() => '?').join(',');
     
     const feedback = await env.DB.prepare(`
-      SELECT 
-        id,
-        source,
-        title,
-        content,
-        author,
-        url,
-        urgency,
-        sentiment,
-        tags,
-        timestamp
+      SELECT id, source, title, content, author, url, urgency, sentiment, tags, timestamp
       FROM feedback
       WHERE id IN (${placeholders})
     `).bind(...feedbackIds).all();
     
-    // Add similarity scores
     const enriched = feedback.results.map((item: any) => ({
       ...item,
       similarity: results.matches.find(m => parseInt(m.id) === item.id)?.score || 0
     }));
     
-    // Sort by similarity
     enriched.sort((a, b) => b.similarity - a.similarity);
     
     return Response.json(enriched);
     
   } catch (error) {
-    console.error('Search failed:', error);
-    return Response.json(
-        { error: 'Search failed', message: error instanceof Error ? error.message : 'Unknown error' }, 
-        { status: 500 }
-    );
+    console.error('Search error:', error);
+    return Response.json({ error: error.message || 'Search failed' }, { status: 500 });
   }
 }
 

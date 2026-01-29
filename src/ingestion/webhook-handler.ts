@@ -34,19 +34,19 @@ export async function handleSupportWebhook(
     
     console.log('5. Validation passed');
     
-    const feedback: FeedbackItem = {
-      source: 'support',
-      external_id: `ticket-${payload.ticket_id}`,
-      title: payload.subject,
-      content: payload.description,
-      author: payload.customer_email,
-      timestamp: payload.created_at ? new Date(payload.created_at).getTime() : Date.now(),
-      metadata: {
-        priority: payload.priority,
-        customer_tier: payload.customer_tier,
-        tags: payload.tags
-      }
-    };
+  const feedback: FeedbackItem = {
+    source: (payload.source || 'support') as 'github' | 'slack' | 'support',  // Use source from payload
+    external_id: `ticket-${payload.ticket_id}`,
+    title: payload.subject,
+    content: payload.description,
+    author: payload.customer_email,
+    timestamp: payload.created_at ? new Date(payload.created_at).getTime() : Date.now(),
+    metadata: {
+      priority: payload.priority,
+      customer_tier: payload.customer_tier,
+      tags: payload.tags
+    }
+  };
     
     console.log('6. Feedback object created');
     

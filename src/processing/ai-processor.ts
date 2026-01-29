@@ -73,7 +73,10 @@ if (embedding) {
   
   // Send urgent alert if needed
   if (urgency >= 9) {
+    console.log(`Triggering urgent alert for ${feedbackId}`);
     await sendUrgentAlert(feedbackId, content, urgency, env);
+  } else {
+    console.log(`No alert - urgency ${urgency} below threshold`);
   }
   
   console.log(`Processing complete for ${feedbackId}`);
@@ -115,84 +118,24 @@ async function sendUrgentAlert(
   urgency: number,
   env: Env
 ): Promise<void> {
-  // Check for recent similar alerts (deduplication)
-  const recentSimilar = await env.DB.prepare(`
-    SELECT id FROM feedback 
-    WHERE urgency >= 9 
-    AND processed_at > ? 
-    AND content_hash IN (
-      SELECT content_hash FROM feedback WHERE id = ?
-    )
-    AND id != ?
-    LIMIT 1
-  `).bind(
-    Date.now() - (4 * 60 * 60 * 1000), // 4 hours
-    feedbackId,
-    feedbackId
-  ).first();
+  const priority = 10 - urgency;
   
-  if (recentSimilar) {
-    console.log(`Skipping duplicate urgent alert for ${feedbackId}`);
-    return;
-  }
-  
-  const priority = 10 - urgency; // P0 for urgency 10
-  
-  // Send to Slack (fire-and-forget)
   try {
-    await fetch(env.SLACK_WEBHOOK_URL, {
+    const response = await fetch(env.SLACK_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        text: `🚨 CRITICAL FEEDBACK (P${priority})`,
-        blocks: [
-          {
-            type: 'header',
-            text: {
-              type: 'plain_text',
-              text: `🚨 Critical Feedback Alert (P${priority})`
-            }
-          },
-          {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `*Content:*\n${content.substring(0, 500)}${content.length > 500 ? '...' : ''}`
-            }
-          },
-          {
-            type: 'section',
-            fields: [
-              {
-                type: 'mrkdwn',
-                text: `*Urgency:* ${urgency}/10`
-              },
-              {
-                type: 'mrkdwn',
-                text: `*Feedback ID:* ${feedbackId}`
-              }
-            ]
-          },
-          {
-            type: 'actions',
-            elements: [
-              {
-                type: 'button',
-                text: {
-                  type: 'plain_text',
-                  text: 'View in Dashboard'
-                },
-                url: `${env.DASHBOARD_URL}/feedback/${feedbackId}`,
-                style: 'danger'
-              }
-            ]
-          }
-        ]
+        content: `🚨 **CRITICAL FEEDBACK ALERT (P${priority})**\n\n**Urgency:** ${urgency}/10\n**Content:** ${content.substring(0, 500)}\n**Feedback ID:** ${feedbackId}\n\n[View in Dashboard](${env.DASHBOARD_URL})`
       })
     });
     
-    console.log(`Urgent alert sent for ${feedbackId}`);
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`Discord webhook failed:`, response.status, error);
+    } else {
+      console.log(`✅ Alert sent successfully for ${feedbackId}`);
+    }
   } catch (error) {
-    console.error(`Failed to send urgent alert for ${feedbackId}:`, error);
+    console.error(`Alert send failed:`, error);
   }
 }

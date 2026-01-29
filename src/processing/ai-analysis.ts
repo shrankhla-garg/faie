@@ -228,6 +228,7 @@ export async function extractTags(
     return tags.length > 0 ? tags.slice(0, 4) : ['general'];
   }
   
+  
   try {
     const result = await ai.run(
       '@cf/meta/llama-3-8b-instruct',
@@ -235,33 +236,42 @@ export async function extractTags(
         messages: [
           {
             role: 'system',
-            content: `Extract 2-4 product themes/tags from the feedback.
-              Return ONLY a JSON array of lowercase strings.
-              Example: ["authentication", "performance", "ui-ux"]
-              
-              Common themes: authentication, performance, ui-ux, billing, 
-              api, documentation, mobile, deployment, security, integration, 
-              database, search, notifications, analytics, export`
+            content: `You are a JSON-only API. Extract 2-4 product themes from feedback. 
+              Respond with ONLY a JSON array, nothing else. No explanations, no markdown.
+              Example response: ["authentication","performance"]`
           },
           {
             role: 'user',
-            content: truncateToTokens(content, 1000)
+            content: `Feedback: ${truncateToTokens(content, 1000)}\n\nJSON array of themes:`
           }
         ]
       }
     );
     
-    const cleaned = result.response.replace(/```json|```/g, '').trim();
-    const tags = JSON.parse(cleaned);
+    // Clean response more aggressively
+    let cleaned = result.response
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .replace(/Here are.*?:/gi, '')
+      .replace(/.*?\[/s, '[')  // Remove everything before first [
+      .trim();
     
-    if (!Array.isArray(tags)) {
-      return ['general'];
+    // Find JSON array
+    const match = cleaned.match(/\[.*\]/s);
+    if (match) {
+      const tags = JSON.parse(match[0]);
+      
+      if (!Array.isArray(tags)) {
+        return ['general'];
+      }
+      
+      return tags
+        .filter((tag: any) => typeof tag === 'string')
+        .map((tag: string) => tag.toLowerCase().trim())
+        .slice(0, 5);
     }
     
-    return tags
-      .filter((tag: any) => typeof tag === 'string')
-      .map((tag: string) => tag.toLowerCase().trim())
-      .slice(0, 5);
+    return ['general'];
       
   } catch (error) {
     console.error('Tag extraction failed:', error);
