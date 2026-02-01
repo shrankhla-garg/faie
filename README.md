@@ -4,7 +4,6 @@
 
 FAIE automatically aggregates, analyzes, and prioritizes customer feedback from multiple sources using AI, helping product teams focus on what matters most.
 
-![FeedbackIQ Dashboard](https://via.placeholder.com/800x400?text=Add+Dashboard+Screenshot)
 
 ---
 
