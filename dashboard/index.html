@@ -68,27 +68,29 @@
       margin-top: 5px;
     }
 
-    #demoResetBtn {
-      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-      color: white;
-      border: none;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 15px;
-      box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
-      transition: all 0.3s ease;
-    }
+ #demoResetBtn {
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  color: white;
+  border: none;
+  padding: 18px 36px;
+  border-radius: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
-    #demoResetBtn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5);
-    }
+#demoResetBtn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 16px 40px rgba(249, 115, 22, 0.6);
+}
 
-    #demoResetBtn:active {
-      transform: translateY(0);
-    }
+#demoResetBtn:active {
+  transform: translateY(0) scale(1);
+}
 
     #demoStatus {
       display: none;
@@ -487,7 +489,7 @@
           <div class="subtitle">AI-Powered Feedback Intelligence Platform</div>
         </div>
       </div>
-      <button id="demoResetBtn">🎬 DEMO RESET</button>
+      <button id="demoResetBtn">🎬 INGEST FEEDBACK FOR TEST</button>
     </div>
 
     <div id="demoStatus"></div>
@@ -699,7 +701,7 @@ async function showThemeFeedback(themeName) {
     const response = await fetch(`${API_URL}/api/feedback`);
     const allFeedback = await response.json();
 
-    
+
     const themeFeedback = allFeedback.filter(item => {
       const tags = JSON.parse(item.tags || '[]');
       return tags.includes(themeName);
