@@ -3,454 +3,716 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FAIE - Feedback Aggregator Insights Engine: Dashboard</title>
+  <title>FAIE - Feedback Aggregator Insights Engine</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f5f5f5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #f97316 0%, #f59e0b 50%, #fb923c 100%);
+      min-height: 100vh;
       padding: 20px;
     }
-    
+
     .container {
       max-width: 1400px;
       margin: 0 auto;
     }
-    
-    header {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-    }
-    
-    .search-box {
-      margin-top: 15px;
-    }
-    
-    .search-box input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-    
-    .grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    
-    .card {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    .card h2 {
-      color: #333;
-      margin-bottom: 15px;
-      font-size: 18px;
-    }
-    
-    .theme-item {
-      padding: 12px;
-      border-bottom: 1px solid #f0f0f0;
+
+    /* Header */
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
-    .theme-item:last-child {
-      border-bottom: none;
-    }
-    
-    .theme-name {
-      font-weight: 500;
-      color: #333;
-    }
-    
-    .theme-count {
-      background: #e3f2fd;
-      color: #1976d2;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 14px;
-    }
-    
-    .urgent-item {
-      padding: 15px;
-      border-left: 4px solid #f44336;
-      background: #ffebee;
-      margin-bottom: 10px;
-      border-radius: 4px;
-    }
-    
-    .urgent-item h3 {
-      color: #c62828;
-      font-size: 16px;
-      margin-bottom: 5px;
-    }
-    
-    .urgent-item p {
-      color: #666;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-    
-    .meta {
+
+    .logo {
       display: flex;
-      gap: 10px;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .logo h1 {
+      font-size: 28px;
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #1f2937;
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 5px;
+    }
+
+    #demoResetBtn {
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    #demoResetBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(249, 115, 22, 0.5);
+    }
+
+    #demoResetBtn:active {
+      transform: translateY(0);
+    }
+
+    #demoStatus {
+      display: none;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #f97316;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-size: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-detail {
+      font-size: 15px;
+      color: #374151;
       margin-top: 8px;
+      font-weight: 600;
+    }
+
+    /* Search */
+    .search-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-box {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    #searchInput {
+      flex: 1;
+      padding: 15px 20px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    #searchInput:focus {
+      outline: none;
+      border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    }
+
+    #searchBtn {
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    #searchBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+    }
+
+    /* Content Grid */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    @media (max-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f3f4f6;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    /* Priority Legend */
+    .priority-legend {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .priority-legend-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .priority-items {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
       font-size: 12px;
     }
-    
-    .badge {
-      padding: 2px 8px;
-      border-radius: 3px;
+
+    .priority-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* Urgent Items */
+    .urgent-item {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .urgent-item:hover {
+      transform: translateX(5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .item-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .item-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .item-content {
+      color: #4b5563;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .item-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: #f3f4f6;
+      color: #4b5563;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
       font-weight: 500;
     }
-    
-    .badge-urgency {
-      background: #ffcdd2;
-      color: #c62828;
+
+    .item-meta {
+      color: #9ca3af;
+      font-size: 12px;
     }
-    
-    .badge-source {
-      background: #e0e0e0;
-      color: #424242;
+
+    /* Theme Item */
+    .theme-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      transition: all 0.3s ease;
     }
-    
+
+    .theme-item:hover {
+      background: #f9fafb;
+      transform: translateX(5px);
+    }
+
+    .theme-name {
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 15px;
+    }
+
+    .theme-count {
+      background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    /* Loading */
     .loading {
       text-align: center;
       padding: 40px;
-      color: #999;
+      color: #6b7280;
     }
-    
-    .search-results {
-      margin-top: 20px;
+
+    .spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #f97316;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
     }
-    
-    .result-item {
-      padding: 15px;
-      border: 1px solid #e0e0e0;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      background: white;
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    
-    .similarity {
-      display: inline-block;
-      background: #4caf50;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 3px;
-      font-size: 12px;
-      margin-bottom: 8px;
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #9ca3af;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.5;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>📊 FAIE - Feedback Aggregator Insights Engine  </h1>
-      <p>Real-time feedback intelligence and analysis</p>
-      
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">🎯</div>
+        <div>
+          <h1>FAIE - Feedback Aggregator Insights Engine</h1>
+          <div class="subtitle">AI-Powered Feedback Intelligence Platform</div>
+        </div>
+      </div>
+      <button id="demoResetBtn">🎬 DEMO RESET</button>
+    </div>
+
+    <div id="demoStatus"></div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">📊 Total Feedback</div>
+        <div class="stat-value" id="totalFeedback">0</div>
+        <div class="stat-detail" id="bySource">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">⚡ Processing Health</div>
+        <div class="stat-value" id="processed">0</div>
+        <div class="stat-detail" id="processingDetail">of <span id="totalItems">0</span> processed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">😊 Sentiment</div>
+        <div class="stat-value" id="sentimentValue">-</div>
+        <div class="stat-detail" id="sentimentDetail">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">🚨 Critical Items</div>
+        <div class="stat-value" id="criticalCount">0</div>
+        <div class="stat-detail">Urgency 9-10</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-section">
+      <h2 class="section-title">
+        <span class="section-icon">🔍</span>
+        Semantic Search
+      </h2>
       <div class="search-box">
         <input 
           type="text" 
           id="searchInput" 
-          placeholder="Search feedback semantically... (e.g., 'login problems')"
-        >
+          placeholder="Search feedback semantically... (e.g., 'login problems', 'slow performance')"
+        />
+        <button id="searchBtn">Search</button>
       </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        
-        <button 
-          id="demoResetBtn"
-          style="
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-          "
-          onmouseover="this.style.transform='scale(1.05)'"
-          onmouseout="this.style.transform='scale(1)'"
-        >
-          🎬 DEMO RESET
-        </button>
-      </div>
-
-      <div id="demoStatus" style="
-        display: none;
-        background: #f0f9ff;
-        border: 2px solid #0ea5e9;
-        padding: 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        text-align: center;
-      "></div>
-      
-      <div id="searchResults" class="search-results"></div>
-    </header>
-    
-    <div class="grid">
-      <div class="card">
-        <h2>🏷️ Top Themes</h2>
-        <div id="themes" class="loading">Loading themes...</div>
-      </div>
-      
-      <div class="card">
-        <h2>📈 Quick Stats</h2>
-        <div id="stats" class="loading">Loading stats...</div>
-      </div>
+      <div id="searchResults"></div>
     </div>
-    
-    <div class="card">
-      <h2>🚨 Urgent Feedback</h2>
-      <div id="urgent" class="loading">Loading urgent items...</div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+      <!-- Urgent Items -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">🚨</span>
+            Urgent Items
+          </h2>
+        </div>
+        <div class="priority-legend">
+          <div class="priority-legend-title">Priority Levels</div>
+          <div class="priority-items">
+            <span><span class="priority-badge" style="background: #fee2e2; color: #dc2626;">P0</span> Critical (9-10)</span>
+            <span><span class="priority-badge" style="background: #ffedd5; color: #ea580c;">P1</span> High (7-8)</span>
+            <span><span class="priority-badge" style="background: #fef3c7; color: #f59e0b;">P2</span> Medium (5-6)</span>
+          </div>
+        </div>
+        <div id="urgentItems"></div>
+      </div>
+
+      <!-- Top Themes -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">🏷️</span>
+            Top Themes
+          </h2>
+        </div>
+        <div id="themes"></div>
+      </div>
     </div>
   </div>
-  
+
   <script>
-    // Configuration - UPDATE THIS WITH YOUR WORKER URL
     const API_URL = 'https://faie.sg2243.workers.dev';
-    
-    // Load themes
-    async function loadThemes() {
+
+    // Load dashboard data
+    async function loadDashboard() {
       try {
-        const response = await fetch(`${API_URL}/api/themes`);
-        const themes = await response.json();
-        
-        const html = themes.map(theme => `
-          <div class="theme-item">
-            <span class="theme-name">${theme.theme_name}</span>
-            <span class="theme-count">${theme.count} mentions</span>
-          </div>
-        `).join('');
-        
-        document.getElementById('themes').innerHTML = html || 'No themes yet';
+        const [stats, themes, urgent] = await Promise.all([
+          fetch(`${API_URL}/api/stats`).then(r => r.json()),
+          fetch(`${API_URL}/api/themes`).then(r => r.json()),
+          fetch(`${API_URL}/api/urgent`).then(r => r.json())
+        ]);
+
+        renderStats(stats);
+        renderThemes(themes);
+        renderUrgentItems(urgent);
       } catch (error) {
-        document.getElementById('themes').innerHTML = 'Error loading themes';
-        console.error(error);
+        console.error('Failed to load dashboard:', error);
       }
     }
-    
-    // Load stats
-    async function loadStats() {
-      try {
-        const response = await fetch(`${API_URL}/api/stats`);
-        const stats = await response.json();
+
+    function renderStats(stats) {
+      document.getElementById('totalFeedback').textContent = stats.total || 0;
+      
+      const bySource = stats.by_source || [];
+      document.getElementById('bySource').innerHTML = bySource.length > 0
+        ? bySource.map(s => `<span style="margin-right: 12px;">${s.source}: ${s.count}</span>`).join('')
+        : 'No data';
+      
+      document.getElementById('processed').textContent = stats.processing_health?.processed || 0;
+      document.getElementById('totalItems').textContent = stats.processing_health?.total || 0;
+
+      const sentiment = stats.sentiment || [];
+      const dominant = sentiment.sort((a, b) => b.count - a.count)[0];
+      if (dominant) {
+        const emoji = dominant.sentiment === 'positive' ? '😊' : dominant.sentiment === 'negative' ? '😞' : '😐';
+        document.getElementById('sentimentValue').textContent = emoji;
+        document.getElementById('sentimentDetail').textContent = `${dominant.sentiment} (${dominant.count} items)`;
+      }
+
+      const urgency = stats.urgency || [];
+      const critical = urgency.find(u => u.level === 'critical');
+      document.getElementById('criticalCount').textContent = critical?.count || 0;
+    }
+
+    function getPriorityLabel(urgency) {
+      if (urgency >= 9) return { label: 'P0', color: '#dc2626', bg: '#fee2e2' };
+      if (urgency >= 7) return { label: 'P1', color: '#ea580c', bg: '#ffedd5' };
+      if (urgency >= 5) return { label: 'P2', color: '#f59e0b', bg: '#fef3c7' };
+      if (urgency >= 3) return { label: 'P3', color: '#84cc16', bg: '#ecfccb' };
+      return { label: 'P4', color: '#22c55e', bg: '#dcfce7' };
+    }
+
+    function renderUrgentItems(items) {
+      const container = document.getElementById('urgentItems');
+      
+      if (!items || items.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">✨</div><p>No urgent items at the moment</p></div>';
+        return;
+      }
+      
+      container.innerHTML = items.map(item => {
+        const priority = getPriorityLabel(item.urgency);
+        const tags = JSON.parse(item.tags || '[]');
         
-        const html = `
-          <div style="display: grid; gap: 15px;">
-            <div>
-              <strong>Total Feedback (7d):</strong> ${stats.total}
+        return `
+          <div class="urgent-item">
+            <div class="item-header">
+              <div class="item-badges">
+                <span class="priority-badge" style="background: ${priority.bg}; color: ${priority.color};">${priority.label}</span>
+                <span class="tag" style="background: ${item.sentiment === 'negative' ? '#fee2e2' : item.sentiment === 'positive' ? '#dcfce7' : '#f3f4f6'}; color: ${item.sentiment === 'negative' ? '#dc2626' : item.sentiment === 'positive' ? '#16a34a' : '#6b7280'};">${item.sentiment}</span>
+              </div>
+              <span class="item-meta">${new Date(item.timestamp).toLocaleDateString()}</span>
             </div>
-            <div>
-              <strong>Processing Health:</strong><br>
-              Processed: ${stats.processing_health?.processed || 0} / 
-              ${stats.processing_health?.total || 0}
-              ${stats.processing_health?.failed > 0 ? `<br>Failed: ${stats.processing_health.failed}` : ''}
+            
+            ${item.title ? `<div class="item-title">${item.title}</div>` : ''}
+            
+            <div class="item-content">
+              ${item.content.substring(0, 200)}${item.content.length > 200 ? '...' : ''}
             </div>
-            <div>
-              <strong>By Source:</strong><br>
-              ${stats.by_source.map(s => `${s.source}: ${s.count}`).join('<br>')}
+            
+            <div class="item-footer">
+              <div class="item-tags">
+                ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+              </div>
+              <span class="item-meta">${item.source} • ID: ${item.id}</span>
             </div>
           </div>
         `;
-        
-        document.getElementById('stats').innerHTML = html;
-      } catch (error) {
-        document.getElementById('stats').innerHTML = 'Error loading stats';
-        console.error(error);
-      }
+      }).join('');
     }
-    
-    // Load urgent items
-    async function loadUrgent() {
+
+    function renderThemes(themes) {
+      const container = document.getElementById('themes');
+      
+      if (!themes || themes.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏷️</div><p>No themes detected yet</p></div>';
+        return;
+      }
+      
+      container.innerHTML = themes.map(theme => `
+        <div class="theme-item">
+          <span class="theme-name">${theme.theme_name}</span>
+          <span class="theme-count">${theme.count}</span>
+        </div>
+      `).join('');
+    }
+
+    // Search functionality
+    document.getElementById('searchBtn').addEventListener('click', async () => {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) return;
+
+      const resultsDiv = document.getElementById('searchResults');
+      resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Searching...</div>';
+
       try {
-        const response = await fetch(`${API_URL}/api/urgent`);
-        const urgent = await response.json();
-        
-        if (urgent.length === 0) {
-          document.getElementById('urgent').innerHTML = '✅ No urgent items';
+        const response = await fetch(`${API_URL}/api/search?q=${encodeURIComponent(query)}`);
+        const results = await response.json();
+
+        if (!results || results.length === 0) {
+          resultsDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>No results found</p></div>';
           return;
         }
-        
-        const html = urgent.map(item => {
+
+        resultsDiv.innerHTML = results.map(item => {
           const tags = JSON.parse(item.tags || '[]');
           return `
             <div class="urgent-item">
-              <h3>${item.title || 'Untitled'}</h3>
-              <p>${item.content.substring(0, 200)}...</p>
-              <div class="meta">
-                <span class="badge badge-urgency">P${10 - item.urgency}</span>
-                <span class="badge badge-source">${item.source}</span>
-                ${tags.map(tag => `<span class="badge">${tag}</span>`).join('')}
+              <div class="item-header">
+                <div class="item-badges">
+                  <span class="tag" style="background: #e0e7ff; color: #4f46e5;">Match: ${(item.similarity * 100).toFixed(0)}%</span>
+                </div>
+                <span class="item-meta">${new Date(item.timestamp).toLocaleDateString()}</span>
+              </div>
+              ${item.title ? `<div class="item-title">${item.title}</div>` : ''}
+              <div class="item-content">${item.content.substring(0, 150)}...</div>
+              <div class="item-footer">
+                <div class="item-tags">
+                  ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+                <span class="item-meta">${item.source}</span>
               </div>
             </div>
           `;
         }).join('');
-        
-        document.getElementById('urgent').innerHTML = html;
       } catch (error) {
-        document.getElementById('urgent').innerHTML = 'Error loading urgent items';
-        console.error(error);
+        resultsDiv.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><p>Search failed</p></div>';
       }
-    }
-    
-    // Search functionality
-    let searchTimeout;
-    document.getElementById('searchInput').addEventListener('input', (e) => {
-      clearTimeout(searchTimeout);
-      const query = e.target.value;
-      
-      if (query.length < 3) {
-        document.getElementById('searchResults').innerHTML = '';
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('searchBtn').click();
+      }
+    });
+
+    // Demo reset
+    document.getElementById('demoResetBtn').addEventListener('click', async () => {
+      if (!confirm('This will delete all existing data and generate fresh demo data. Continue?')) {
         return;
       }
-      
-      searchTimeout = setTimeout(async () => {
-        try {
-          document.getElementById('searchResults').innerHTML = '<div class="loading">Searching...</div>';
-          
-          const response = await fetch(`${API_URL}/api/search?q=${encodeURIComponent(query)}`);
-          const results = await response.json();
-          
-          if (results.length === 0) {
-            document.getElementById('searchResults').innerHTML = '<p>No results found</p>';
-            return;
-          }
-          
-          const html = results.map(item => {
-            const tags = JSON.parse(item.tags || '[]');
-            return `
-              <div class="result-item">
-                <span class="similarity">${(item.similarity * 100).toFixed(0)}% match</span>
-                <h3>${item.title || 'Untitled'}</h3>
-                <p>${item.content.substring(0, 200)}...</p>
-                <div class="meta">
-                  <span class="badge badge-source">${item.source}</span>
-                  <span class="badge">Urgency: ${item.urgency}/10</span>
-                  ${tags.map(tag => `<span class="badge">${tag}</span>`).join('')}
-                </div>
-              </div>
-            `;
-          }).join('');
-          
-          document.getElementById('searchResults').innerHTML = html;
-        } catch (error) {
-          document.getElementById('searchResults').innerHTML = '<p>Search failed</p>';
-          console.error(error);
-        }
-      }, 500);
-    });
 
-
-    // Demo reset functionality
-    document.getElementById('demoResetBtn').addEventListener('click', async () => {
-  const btn = document.getElementById('demoResetBtn');
-  const status = document.getElementById('demoStatus');
-  
-  // Confirm
-  if (!confirm('This will delete all existing data and generate fresh demo data. Continue?')) {
-    return;
-  }
-  
-  // Disable button
-  btn.disabled = true;
-  btn.textContent = '⏳ Resetting...';
-  
-  // Show status
-  status.style.display = 'block';
-  status.innerHTML = '🔄 Clearing database and generating demo data...';
-  
-  try {
-    const response = await fetch(`${API_URL}/api/demo-reset`, {
-      method: 'POST'
-    });
-    
-    const result = await response.json();
-    
-    if (result.success) {
-      status.innerHTML = `
-        ✅ Demo reset complete!<br/>
-        Generated ${result.successCount}/${result.totalItems} items.<br/>
-        <strong>Wait 60 seconds for AI processing to complete...</strong>
-      `;
+      const btn = document.getElementById('demoResetBtn');
+      const status = document.getElementById('demoStatus');
       
-      // Countdown
-      let countdown = 60;
-      const interval = setInterval(() => {
-        countdown--;
-        status.innerHTML = `
-          ✅ Demo reset complete!<br/>
-          Generated ${result.successCount}/${result.totalItems} items.<br/>
-          <strong>AI processing... ${countdown}s remaining</strong>
-        `;
+      btn.disabled = true;
+      btn.textContent = '⏳ Resetting...';
+      
+      status.style.display = 'block';
+      status.innerHTML = '🔄 Clearing database and generating demo data...';
+      
+      try {
+        const response = await fetch(`${API_URL}/api/demo-reset`, { method: 'POST' });
+        const result = await response.json();
         
-        if (countdown === 0) {
-          clearInterval(interval);
-          status.innerHTML = `
-            ✅ Processing complete! Refreshing dashboard...
-          `;
+        if (result.success) {
+          status.innerHTML = `✅ Demo reset complete! Generated ${result.totalItems} items.<br/><strong>Wait 60 seconds for AI processing...</strong>`;
           
-          // Refresh page after 2 seconds
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
+          let countdown = 60;
+          const interval = setInterval(() => {
+            countdown--;
+            status.innerHTML = `✅ Demo reset complete! Generated ${result.totalItems} items.<br/><strong>AI processing... ${countdown}s remaining</strong>`;
+            
+            if (countdown === 0) {
+              clearInterval(interval);
+              status.innerHTML = '✅ Processing complete! Refreshing dashboard...';
+              setTimeout(() => window.location.reload(), 2000);
+            }
+          }, 1000);
+        } else {
+          status.style.background = '#fee2e2';
+          status.style.borderColor = '#dc2626';
+          status.innerHTML = `❌ Error: ${result.error}`;
+          btn.disabled = false;
+          btn.textContent = '🎬 DEMO RESET';
         }
-      }, 1000);
-      
-    } else {
-      status.style.background = '#fee';
-      status.style.borderColor = '#f00';
-      status.innerHTML = `❌ Error: ${result.error}`;
-      btn.disabled = false;
-      btn.textContent = '🎬 DEMO RESET';
-    }
-    
-  } catch (error) {
-    status.style.background = '#fee';
-    status.style.borderColor = '#f00';
-    status.innerHTML = `❌ Failed: ${error.message}`;
-    btn.disabled = false;
-    btn.textContent = '🎬 DEMO RESET';
-  }
-});
-    
+      } catch (error) {
+        status.style.background = '#fee2e2';
+        status.style.borderColor = '#dc2626';
+        status.innerHTML = `❌ Failed: ${error.message}`;
+        btn.disabled = false;
+        btn.textContent = '🎬 DEMO RESET';
+      }
+    });
+
     // Initial load
-    loadThemes();
-    loadStats();
-    loadUrgent();
-    
-    // Auto-refresh every 60 seconds
-    setInterval(() => {
-      loadThemes();
-      loadStats();
-      loadUrgent();
-    }, 60000);
+    loadDashboard();
+
+    // Auto-refresh every 10 seconds
+    setInterval(loadDashboard, 10000);
   </script>
 </body>
 </html>
