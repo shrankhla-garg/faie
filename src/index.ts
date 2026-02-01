@@ -28,7 +28,7 @@ export default {
 
 // Root - redirect to dashboard
     if (url.pathname === '/') {
-      return Response.redirect('https://3a0b0299.faie-dashboard.pages.dev', 302);
+      return Response.redirect('https://43acfcc7.faie-dashboard.pages.dev', 302);
     }
 
     // Route webhooks
