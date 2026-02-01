@@ -192,3 +192,25 @@ export async function getStats(
     }
   });
 }
+
+export async function getAllFeedback(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  try {
+    const feedback = await env.DB.prepare(`
+      SELECT 
+        id, source, title, content, author, url,
+        urgency, sentiment, sentiment_score, tags, timestamp
+      FROM feedback
+      WHERE processed_at IS NOT NULL
+      ORDER BY timestamp DESC
+      LIMIT 100
+    `).all();
+    
+    return Response.json(feedback.results);
+  } catch (error) {
+    console.error('Get all feedback failed:', error);
+    return Response.json({ error: 'Failed to fetch feedback' }, { status: 500 });
+  }
+}

@@ -1,5 +1,5 @@
 import { Env } from '../shared/types';
-import { getThemes, getUrgentItems, searchFeedback, getStats } from './dashboard-api';
+import { getThemes, getUrgentItems, searchFeedback, getStats, getAllFeedback } from './dashboard-api';
 
 export async function handleAPI(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
@@ -16,8 +16,9 @@ export async function handleAPI(request: Request, env: Env): Promise<Response> {
   }
   
   let response: Response;
-  
-  if (url.pathname === '/api/themes') {
+  if (url.pathname === '/api/feedback') {
+  response = await getAllFeedback(request, env);
+  } else if (url.pathname === '/api/themes') {
     response = await getThemes(request, env);
   } else if (url.pathname === '/api/urgent') {
     response = await getUrgentItems(request, env);

@@ -410,6 +410,70 @@
       margin-bottom: 15px;
       opacity: 0.5;
     }
+
+    /* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background: white;
+  max-width: 900px;
+  margin: 40px auto;
+  border-radius: 20px;
+  padding: 40px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.modal-close {
+  background: #f3f4f6;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: #e5e7eb;
+  transform: rotate(90deg);
+}
+
+.theme-item {
+  cursor: pointer;
+}
+
+.theme-item:active {
+  transform: translateX(8px);
+}
+    
   </style>
 </head>
 <body>
@@ -500,6 +564,16 @@
         </div>
         <div id="themes"></div>
       </div>
+    </div>
+  </div>
+<!-- Theme Modal -->
+  <div id="themeModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalThemeTitle">Theme Feedback</h2>
+        <button class="modal-close" onclick="closeThemeModal()">×</button>
+      </div>
+      <div id="modalFeedbackList"></div>
     </div>
   </div>
 
@@ -596,19 +670,94 @@
 
     function renderThemes(themes) {
       const container = document.getElementById('themes');
-      
-      if (!themes || themes.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏷️</div><p>No themes detected yet</p></div>';
-        return;
-      }
-      
-      container.innerHTML = themes.map(theme => `
-        <div class="theme-item">
-          <span class="theme-name">${theme.theme_name}</span>
-          <span class="theme-count">${theme.count}</span>
-        </div>
-      `).join('');
+  
+  if (!themes || themes.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏷️</div><p>No themes detected yet</p></div>';
+    return;
+  }
+  
+  container.innerHTML = themes.map(theme => `
+    <div class="theme-item" onclick="showThemeFeedback('${theme.theme_name}')">
+      <span class="theme-name">${theme.theme_name}</span>
+      <span class="theme-count">${theme.count}</span>
+    </div>
+  `).join('');
     }
+
+    // Show feedback for a specific theme
+async function showThemeFeedback(themeName) {
+  const modal = document.getElementById('themeModal');
+  const modalTitle = document.getElementById('modalThemeTitle');
+  const modalContent = document.getElementById('modalFeedbackList');
+  
+  modalTitle.textContent = `${themeName} (loading...)`;
+  modalContent.innerHTML = '<div class="loading"><div class="spinner"></div>Loading feedback...</div>';
+  modal.style.display = 'block';
+  
+  try {
+    // Fetch all feedback and filter by theme
+    const response = await fetch(`${API_URL}/api/feedback`);
+    const allFeedback = await response.json();
+
+    
+    const themeFeedback = allFeedback.filter(item => {
+      const tags = JSON.parse(item.tags || '[]');
+      return tags.includes(themeName);
+    });
+    
+    modalTitle.textContent = `${themeName} (${themeFeedback.length} items)`;
+    
+    if (themeFeedback.length === 0) {
+      modalContent.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><p>No feedback found for this theme</p></div>';
+      return;
+    }
+    
+    modalContent.innerHTML = themeFeedback.map(item => {
+      const priority = getPriorityLabel(item.urgency);
+      const tags = JSON.parse(item.tags || '[]');
+      
+      return `
+        <div class="urgent-item">
+          <div class="item-header">
+            <div class="item-badges">
+              <span class="priority-badge" style="background: ${priority.bg}; color: ${priority.color};">${priority.label}</span>
+              <span class="tag" style="background: ${item.sentiment === 'negative' ? '#fee2e2' : item.sentiment === 'positive' ? '#dcfce7' : '#f3f4f6'}; color: ${item.sentiment === 'negative' ? '#dc2626' : item.sentiment === 'positive' ? '#16a34a' : '#6b7280'};">${item.sentiment}</span>
+            </div>
+            <span class="item-meta">${new Date(item.timestamp).toLocaleDateString()}</span>
+          </div>
+          
+          ${item.title ? `<div class="item-title">${item.title}</div>` : ''}
+          
+          <div class="item-content">
+            ${item.content}
+          </div>
+          
+          <div class="item-footer">
+            <div class="item-tags">
+              ${tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
+            <span class="item-meta">${item.source} • ID: ${item.id}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+  } catch (error) {
+    modalContent.innerHTML = '<div class="empty-state"><div class="empty-icon">❌</div><p>Failed to load feedback</p></div>';
+  }
+}
+
+function closeThemeModal() {
+  document.getElementById('themeModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const modal = document.getElementById('themeModal');
+  if (event.target === modal) {
+    closeThemeModal();
+  }
+}
 
     // Search functionality
     document.getElementById('searchBtn').addEventListener('click', async () => {

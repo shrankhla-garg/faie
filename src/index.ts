@@ -25,6 +25,12 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     
+
+// Root - redirect to dashboard
+    if (url.pathname === '/') {
+      return Response.redirect('https://3a0b0299.faie-dashboard.pages.dev', 302);
+    }
+
     // Route webhooks
     if (url.pathname.startsWith('/webhook/')) {
       return handleIngestion(request, env, ctx);
@@ -40,16 +46,6 @@ if (url.pathname === '/api/demo-reset') {
       return handleAPI(request, env);
     }
 
-  
-
-    if (url.pathname === '/debug') {
-  return Response.json({
-    hasAI: !!env.AI,
-    hasDB: !!env.DB,
-    hasVectorize: !!env.VECTORIZE,
-    aiType: typeof env.AI
-  });
-}
     
     // Root endpoint
     return new Response('FAIE API - Running', { 
