@@ -4,11 +4,11 @@ import { getThemes, getUrgentItems, searchFeedback, getStats } from './dashboard
 export async function handleAPI(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   
-  // CORS headers
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type'
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Cache-Control': 'no-cache, no-store, must-revalidate'
   };
   
   if (request.method === 'OPTIONS') {
@@ -24,13 +24,12 @@ export async function handleAPI(request: Request, env: Env): Promise<Response> {
   } else if (url.pathname === '/api/search') {
     response = await searchFeedback(request, env);
   } else if (url.pathname === '/api/stats') {
-    response = await getStats(request, env);
+      response = await getStats(request, env);
   } else {
     response = new Response('Not Found', { status: 404 });
   }
   
-  // ✅ Create NEW response with CORS headers
-  const newResponse = new Response(response.body, {
+  return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
     headers: {
@@ -38,6 +37,4 @@ export async function handleAPI(request: Request, env: Env): Promise<Response> {
       ...corsHeaders
     }
   });
-  
-  return newResponse;
 }

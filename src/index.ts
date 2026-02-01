@@ -15,6 +15,8 @@ import { Env } from './shared/types';
 import { handleIngestion } from './ingestion';
 import { handleAPI } from './api';
 import { sendDailySummary, retryFailedProcessing } from './scheduled/notifications';
+import { handleDemoReset } from './api/demo';
+import { processInBackground } from './processing/ai-processor';
 
 export default {
   /**
@@ -27,11 +29,27 @@ export default {
     if (url.pathname.startsWith('/webhook/')) {
       return handleIngestion(request, env, ctx);
     }
+
+    // Demo reset - ADD THIS
+if (url.pathname === '/api/demo-reset') {
+  return handleDemoReset(request, env);
+}
     
     // Route API calls
     if (url.pathname.startsWith('/api/')) {
       return handleAPI(request, env);
     }
+
+  
+
+    if (url.pathname === '/debug') {
+  return Response.json({
+    hasAI: !!env.AI,
+    hasDB: !!env.DB,
+    hasVectorize: !!env.VECTORIZE,
+    aiType: typeof env.AI
+  });
+}
     
     // Root endpoint
     return new Response('FAIE API - Running', { 
@@ -44,14 +62,16 @@ export default {
    * Handle scheduled triggers (cron)
    */
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    if (event.cron === '0 9 * * *') {
-      // Daily summary at 9 AM
-      console.log('Running daily summary...');
-      await sendDailySummary(env);
-    } else if (event.cron === '*/5 * * * *') {
-      // Retry failed items every 5 minutes
-      console.log('Running retry job...');
-      await retryFailedProcessing(env);
-    }
+  // Process up to 10 pending items per minute (avoids subrequest limit)
+  const pending = await env.DB.prepare(`
+    SELECT id, content 
+    FROM feedback 
+    WHERE processed_at IS NULL 
+    LIMIT 10
+  `).all();
+
+  for (const item of pending.results) {
+    ctx.waitUntil(processInBackground(item.id as number, item.content as string, env));
   }
+}
 };

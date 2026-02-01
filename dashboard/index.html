@@ -167,7 +167,7 @@
 <body>
   <div class="container">
     <header>
-      <h1>📊 FAIE - Feedback Aggregator Insights Engine:  </h1>
+      <h1>📊 FAIE - Feedback Aggregator Insights Engine  </h1>
       <p>Real-time feedback intelligence and analysis</p>
       
       <div class="search-box">
@@ -177,6 +177,39 @@
           placeholder="Search feedback semantically... (e.g., 'login problems')"
         >
       </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        
+        <button 
+          id="demoResetBtn"
+          style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+          "
+          onmouseover="this.style.transform='scale(1.05)'"
+          onmouseout="this.style.transform='scale(1)'"
+        >
+          🎬 DEMO RESET
+        </button>
+      </div>
+
+      <div id="demoStatus" style="
+        display: none;
+        background: #f0f9ff;
+        border: 2px solid #0ea5e9;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+      "></div>
       
       <div id="searchResults" class="search-results"></div>
     </header>
@@ -333,6 +366,79 @@
         }
       }, 500);
     });
+
+
+    // Demo reset functionality
+    document.getElementById('demoResetBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('demoResetBtn');
+  const status = document.getElementById('demoStatus');
+  
+  // Confirm
+  if (!confirm('This will delete all existing data and generate fresh demo data. Continue?')) {
+    return;
+  }
+  
+  // Disable button
+  btn.disabled = true;
+  btn.textContent = '⏳ Resetting...';
+  
+  // Show status
+  status.style.display = 'block';
+  status.innerHTML = '🔄 Clearing database and generating demo data...';
+  
+  try {
+    const response = await fetch(`${API_URL}/api/demo-reset`, {
+      method: 'POST'
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      status.innerHTML = `
+        ✅ Demo reset complete!<br/>
+        Generated ${result.successCount}/${result.totalItems} items.<br/>
+        <strong>Wait 60 seconds for AI processing to complete...</strong>
+      `;
+      
+      // Countdown
+      let countdown = 60;
+      const interval = setInterval(() => {
+        countdown--;
+        status.innerHTML = `
+          ✅ Demo reset complete!<br/>
+          Generated ${result.successCount}/${result.totalItems} items.<br/>
+          <strong>AI processing... ${countdown}s remaining</strong>
+        `;
+        
+        if (countdown === 0) {
+          clearInterval(interval);
+          status.innerHTML = `
+            ✅ Processing complete! Refreshing dashboard...
+          `;
+          
+          // Refresh page after 2 seconds
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }
+      }, 1000);
+      
+    } else {
+      status.style.background = '#fee';
+      status.style.borderColor = '#f00';
+      status.innerHTML = `❌ Error: ${result.error}`;
+      btn.disabled = false;
+      btn.textContent = '🎬 DEMO RESET';
+    }
+    
+  } catch (error) {
+    status.style.background = '#fee';
+    status.style.borderColor = '#f00';
+    status.innerHTML = `❌ Failed: ${error.message}`;
+    btn.disabled = false;
+    btn.textContent = '🎬 DEMO RESET';
+  }
+});
     
     // Initial load
     loadThemes();
